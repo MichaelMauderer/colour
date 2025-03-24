@@ -14,8 +14,8 @@ import typing
 import uuid
 
 import biblib.bib
+import toml
 
-import colour
 from colour.utilities import message_box
 
 if not hasattr(inspect, "getargspec"):
@@ -34,11 +34,6 @@ __email__ = "colour-developers@colour-science.org"
 __status__ = "Production"
 
 __all__ = [
-    "APPLICATION_NAME",
-    "APPLICATION_VERSION",
-    "PYTHON_PACKAGE_NAME",
-    "PYPI_PACKAGE_NAME",
-    "PYPI_ARCHIVE_NAME",
     "BIBLIOGRAPHY_NAME",
     "literalise",
     "clean",
@@ -58,14 +53,30 @@ __all__ = [
     "sha256",
 ]
 
-APPLICATION_NAME: str = colour.__application_name__
 
-APPLICATION_VERSION: str = colour.__version__
+def get_application_name():
+    project_file = toml.load("./pyproject.toml")
+    return project_file["project"]["description"]
 
-PYTHON_PACKAGE_NAME: str = colour.__name__
 
-PYPI_PACKAGE_NAME: str = "colour-science"
-PYPI_ARCHIVE_NAME: str = PYPI_PACKAGE_NAME.replace("-", "_")
+def get_package_name():
+    project_file = toml.load("./pyproject.toml")
+    return project_file["project"]["name"]
+
+
+def get_package_version():
+    project_file = toml.load("./pyproject.toml")
+    return project_file["project"]["version"]
+
+
+def get_pypi_package_name():
+    return get_package_name()
+
+
+def get_pypi_archive_name():
+    package_name = get_pypi_package_name()
+    return package_name.replace("-", "_")
+
 
 BIBLIOGRAPHY_NAME: str = "BIBLIOGRAPHY.bib"
 
@@ -228,13 +239,7 @@ def tests(ctx: Context) -> None:
     """
 
     message_box('Running "Pytest"...')
-    ctx.run(
-        "pytest "
-        "--doctest-modules "
-        f"--ignore={PYTHON_PACKAGE_NAME}/examples "
-        f"--cov={PYTHON_PACKAGE_NAME} "
-        f"{PYTHON_PACKAGE_NAME}"
-    )
+    ctx.run("pytest --doctest-modules --ignore=.*/examples --cov=. .")
 
 
 @task
